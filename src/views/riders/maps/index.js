@@ -1,14 +1,17 @@
 import React, { useState, useRef } from "react";
 import useSwr from "swr";
-import GoogleMapReact from "google-map-react";
+import  GoogleMapReact  from "google-map-react";
 import useSupercluster from "use-supercluster";
-import { InfoWindow } from "@react-google-maps/api";
 
 import "../../../App.css";
 
 const fetcher = (...args) => fetch(...args).then((response) => response.json());
 
-const Marker = ({ children }) => children;
+
+
+const Marker = ({ children, ...rest }) => {
+  return children
+};
 
 const Maps = (props) => {
   const mapRef = useRef();
@@ -24,13 +27,15 @@ const Maps = (props) => {
   const filteredRiders = riders.length
     ? riders.filter((rider) => rider.riderId.startsWith(input))
     : [];
+
   const onMarkerHover = (riderId) => {
     const riderFound = filteredRiders.find(
       (rider) => rider.riderId === riderId
     );
-    console.log(riderFound);
+
     setSelected(riderFound);
   };
+
   const points = filteredRiders.map((rider) => ({
     type: "Feature",
     properties: {
@@ -71,6 +76,7 @@ const Maps = (props) => {
         <button>Search</button>
       </div>
 
+
       <GoogleMapReact
         bootstrapURLKeys={{ key: process.env.REACT_APP_GOOGLE_KEY }}
         // bootstrapURLKeys={{ key: "" }}
@@ -103,6 +109,7 @@ const Maps = (props) => {
                 key={`cluster-${cluster.id}`}
                 lat={latitude}
                 lng={longitude}
+               
               >
                 <div
                   className="cluster-marker"
@@ -124,35 +131,49 @@ const Maps = (props) => {
               </Marker>
             );
           }
-
+          
           return (
             <Marker
               key={`rider-${cluster.properties.riderId}`}
               lat={latitude}
               lng={longitude}
+              show
+              hover
             >
-              {selected.riderId ? (
-                <InfoWindow
-                  position={{
-                    lat: selected.location.coordinates[0],
-                    lng: selected.location.coordinates[1],
-                  }}
-                  clickable={true}
-                  onCloseClick={() => setSelected({})}
-                >
-                  <p>{selected.riderId}</p>
-                </InfoWindow>
-              ) : null}
-              <button
-                className="crime-marker"
-                onMouseOver={(e) => onMarkerHover(cluster.properties.riderId)}
+              <div
+                onMouseEnter={(e) => onMarkerHover(cluster.properties.riderId)}
+                onMouseLeave={() => setSelected({})}
               >
-                <img src="/bike.svg" alt="riders" />
-              </button>
+              
+                {cluster.properties.riderId === selected.riderId && (
+                  <div
+                    style={{
+                      zIndex: 10000,
+                      background: "#fff",
+                      color: "#333",
+                      width: 150,
+                      position: "absolute",
+                      bottom: "100%",
+                    }}
+                  >
+                    <p>id: {selected.riderId}</p>
+                    <p>On Duty: {selected.isDuty ? "yes" : "no"}</p>
+                    <button onClick={() => setSelected({})}>Close</button>
+                  </div>
+                )}
+
+                <button className="crime-marker">
+                  <img src="/bike.svg" alt="riders" />
+                </button>
+              </div>
             </Marker>
           );
         })}
+        
       </GoogleMapReact>
+    
+   
+      
     </div>
   );
 };
