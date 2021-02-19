@@ -10,6 +10,11 @@ const fetcher = (...args) => fetch(...args).then((response) => response.json());
 
 
 const Marker = ({ children, ...rest }) => {
+  const mapWidth = rest.$geoService.getWidth();
+  const mapHeight = rest.$geoService.getHeight();
+  const markerDim = rest.$getDimensions(rest.$dimensionKey);
+ 
+  console.log(mapWidth,mapHeight, markerDim, rest);
   return children
 };
 
